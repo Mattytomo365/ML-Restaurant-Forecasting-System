@@ -10,4 +10,4 @@ It is a full stack web application powered by a machine learning model to accura
 
 The secondary function of this application will present the user with a range of visualisations produced through analysing past sales data within the establishment.
 
-I am still very early in the design phase of this project, this repository will be updated accordingly.
+I am still very early in the design phase of this project, this repository will be updated accordingly. You can view the current progress of this project in the `Projects` tab.
