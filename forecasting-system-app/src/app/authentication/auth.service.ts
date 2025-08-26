@@ -25,15 +25,15 @@ export class AuthService {
     });
   }
 
-  login(email: string, password: string): Observable<UserCredential>{
-    return from(signInWithEmailAndPassword(this.auth, email, password)); // Return from converts the promise returned from the Firebase method to an observable
+  login(email: string, password: string): Promise<UserCredential>{
+    return (signInWithEmailAndPassword(this.auth, email, password)); // Returns promises, objects representing the eventual completion of asynchronous operations, useful for one-off actions
   }
 
-  logout(): Observable<void>{
-    return from(signOut(this.auth));
+  logout(): Promise<void>{
+    return (signOut(this.auth));
   }
 
-  signUp(email: string, password: string): Observable<UserCredential>{
-    return from(createUserWithEmailAndPassword(this.auth, email, password));
+  signUp(email: string, password: string): Promise<UserCredential>{
+    return (createUserWithEmailAndPassword(this.auth, email, password));
   }
 }
