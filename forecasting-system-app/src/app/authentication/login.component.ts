@@ -31,11 +31,11 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
 
   error: string | null = null;
-  loading = false;
-  hide = true;
+  loading = false; // Loading flag prevents double clicks on submit button
+  hide = true; 
 
-  form = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
+  form = this.fb.group({ // Creates a form group with two form controls
+    email: ['', [Validators.required, Validators.email]], // Each form control hold value, status, state, and errors from the validators
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 

@@ -7,9 +7,9 @@
         <form [formGroup]="form" (ngSubmit)="onLogin()" class="form">
         <mat-form-field appearance="fill" class="full">
             <mat-label>Email</mat-label> <!-- Email input field -->
-            <input matInput type="email" formControlName="email" required/>
+            <input matInput type="email" formControlName="email" required/> <!-- formControlName binds the input to a specific FormControl inside the FormGroup -->
             @if (form.controls.email.hasError('required')){
-                <mat-error>Email is required</mat-error> <!-- Field-level validation -->
+                <mat-error>Email is required</mat-error> <!-- Field-level validation, shows errors raised from the form control's validators -->
             }
             @if (form.controls.email.hasError('email')){
                 <mat-error>Enter a valid email</mat-error>
@@ -17,11 +17,11 @@
         </mat-form-field> <!-- Password input field -->
         <mat-form-field appearance="fill" class="full">
             <mat-label>Password</mat-label>
-            <input matInput [type]="hide ? 'password' : 'text'" formControlName="password" required/>
+            <input matInput [type]="hide ? 'password' : 'text'" formControlName="password" required/> <!-- Uses property binding to re-compute expression when icon button is toggled -->
             <button matIconButton matSuffix type="button" (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide">
                 <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
             </button>
-            @if (form.controls.password.hasError('required')){
+            @if (form.controls.password.hasError('required')){ <!-- Field level validation -->
                 <mat-error>Password is required</mat-error>
             }
             @if (form.controls.password.hasError('minLength')){
@@ -32,9 +32,9 @@
         <div class="actions"> <!-- Submit button -->
             <button matButton="filled" type="submit" [disabled]="loading || form.invalid">
                 @if (!loading){
-                    Sign in <!-- Swaps what is shown inside the button without adding extra DOM elements -->
+                    Sign in 
                 }
-                @else{
+                @else{ <!-- Swaps what is shown inside the button without adding extra DOM elements -->
                     <mat-progress-spinner diameter="20" mode="indeterminate"></mat-progress-spinner>
                 }
             </button>

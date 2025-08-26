@@ -15,7 +15,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
 
     provideFirebaseApp(() => initializeApp(firebaseConfig)), // Calls Firebase Web SDK to initialise the Firebase App
-    provideAuth(() => getAuth()) // Returns the Firebase Authentication service tied to the initialised app
+    provideAuth(() => getAuth()), // Returns the Firebase Authentication service tied to the initialised app
   ]
 };
 
