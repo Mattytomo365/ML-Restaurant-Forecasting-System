@@ -1,0 +1,30 @@
+# Build output / caches
+dist/
+.out/
+tmp/
+out-tsc/
+bazel-out/
+.angular/
+
+# Dependencies
+node_modules/
+
+# Coverage / typings
+coverage/
+typings/
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# IDE / editor junk
+.vscode/
+.idea/
+.history/
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
