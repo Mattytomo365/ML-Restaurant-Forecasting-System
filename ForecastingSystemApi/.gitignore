@@ -1,41 +1,14 @@
-# ===== Visual Studio / .NET (solution-level) =====
+# VS/.NET
 .vs/
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-*.csproj.user
-
-# Build artifacts (any project folder, e.g. Web/)
 **/bin/
 **/obj/
+*.suo
+*.user
 
-# Logs
-*.log
-
-# Local-only app settings (keep appsettings.json committed)
-**/appsettings.*.local.json
-**/secrets.json
-
-# Publish profiles (optional to ignore)
-**/Properties/PublishProfiles/*.pubxml
-**/Properties/PublishProfiles/*.pubxml.user
-
-# IIS Express / misc (optional)
-*.svclog
-_ReSharper.Caches/
-
-# Local DB files (optional — ignore if you generate dev DBs in repo)
-*.mdf
-*.ldf
-*.ndf
-*.db
-*.db-shm
-*.db-wal
+# IDE
+.vscode/
+.idea/
 
 # OS junk
 .DS_Store
 Thumbs.db
-
-# NOTE: Keep EF Core migrations tracked
-#!**/Migrations/
