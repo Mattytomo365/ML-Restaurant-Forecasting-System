@@ -8,7 +8,7 @@ import { provideFirebaseApp } from '@angular/fire/app';
 import { initializeApp } from 'firebase/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { authInterceptor } from './authentication/auth.interceptor-interceptor';
+import { authInterceptor } from './authentication/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [ // Providers are collections of tokens facilitating object creation and ensure singleton instances. They are injected into constructors, defining how dependencies are resolved, registration recipe

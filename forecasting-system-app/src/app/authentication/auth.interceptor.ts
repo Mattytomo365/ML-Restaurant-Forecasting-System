@@ -7,10 +7,11 @@ import { Observable, switchMap, take } from 'rxjs';
 export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: HttpHandlerFn): Observable<HttpEvent<any>> => { 
   const auth = inject(AuthService);
 
-  return auth.token$.pipe( // Returns the transformed observable to the HttpClient pipeline
+  // Returns the transformed observable to the HttpClient pipeline
+  return auth.token$.pipe( 
     take(1), // Limits how many times the outer observable (token$) can emit
     switchMap(token => // Switches to a new observable which handles the HTTP request (Observable<HttpEvent>)
-      next(token ? req.clone({setHeaders: {Authorization: `Bearer ${token}`}}) : req) // Attches a bearer token to the header of the HTTP requst, clones because requests are immutable
+      next(token ? req.clone({setHeaders: {Authorization: `Bearer ${token}`}}) : req) // Requests are immutable, clone is required
       // next() continues the request after intercepting it
     )
   );
