@@ -6,8 +6,10 @@
 
 This is a project that I am currently planning to complete during my third and final year at University.
 
-It is a full stack Angular & .NET web application powered by a machine learning model to accurately forecast sales for specified day in a local restaurant, taking a varitey of factors from weather, upcoming national holidays, events in the restaurant, events in the local area and expected number of tables into account.  
+It is a full stack Angular & .NET web application powered by regression models to accurately forecast restaurant sales and surface insights to improve inventory & staffing decisions.
 
-The secondary function of this application will present the user with a range of visualisations produced through analysing past sales data within the establishment.
+The machine learning layer consists of a Python service exposed using Flask, models are trained, tuned, tested, evaluated, and compared using time-aware splits. Historical data is augmented with engineered features for weather, to national holidays, internal events, external events and more.  
 
-I am in the final stages of planning & designing this project. Once I am comfortable with my Angular proficiency, I will begin implementing the application's authentication feature. This repository will be updated accordingly. You can view the current progress of this project in the `Projects` tab, which contains a Kanban Board and Gantt Chart.
+The main dashboard presents forecasting capabilities, alongside visualisations of trends, and forecasting history, all presented through a clean & user-friendly interface.
+
+This repository will be updated accordingly. You can view the current progress of this project in the `Projects` tab, containing instances of this project's Kanban Board and Gantt chart.
