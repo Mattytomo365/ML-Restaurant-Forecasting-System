@@ -20,16 +20,19 @@ def standardise_strings(df):
 # parsing dates to datetime objects
 def parse_dates(df):
     out = df.copy()
-    out["date"] = pd.to_datetime(out["date"], errors="raise") # coverts and raises any exceptions encountered, fails fast
+    out["date"] = pd.to_datetime(out["date"], format="%d/%m/%Y", errors="raise") # coverts and raises any exceptions encountered, fails fast
     return out
 
 # ensures necessary columns are numerical in type and erronous data is surfaced
 def coerce_numeric(df):
     out = df.copy()
     for col in ["sales", "covers"]:
-        str_col = out[col].astype(str).str.strip()
-        str_col = str_col.str.replace("£,", "", regex=True)
-        out[col] = pd.to_numeric(str, errors="coerce") # converts back to numeric, erronous values are nulled
+        series = out[col]
+        series = series.where(~series.apply(lambda x: isinstance(x, type)), np.nan) # replaces stray Python type objects with NaN
+        series = series.astype(str).str.strip()
+        series = series.str.replace("£,", "", regex=True) # removes currency symbols
+        series = series.replace({"": np.nan, "None": np.nan, "N/A": np.nan, "-": np.nan}) # treats comman placeholders as NaN
+        out[col] = pd.to_numeric(series, errors="coerce") # converts back to numeric, erronous values are nulled
     return out
 
 # handles missing values according to column
@@ -39,7 +42,7 @@ def handle_missing(df):
 
     out["dow"] = out["date"].dt.weekday # adds day-of-week feature for day-specific apc
 
-    valid = out["sales"].notna() & out["covers"].notna & (out["covers"] > 0)
+    valid = (out["sales"].notna()) & (out["covers"].notna()) & (out["covers"].gt(0))
     apc_global = (out.loc[valid, "sales"] / out.loc[valid, "covers"]).median() # median avg £ per cover for fallback use
     apc_dow = ( # median avg £ per cover for each day of the week
         (out.loc[valid, "sales"] / out.loc[valid, "covers"])
@@ -47,9 +50,9 @@ def handle_missing(df):
         .median()
     )
 
-    m_sales = out["covers"].notna() & out["sales"].isna() # missing sales values with present covers values
-    m_cov = out["covers"].isna() & out["sales"].notna() # missing cover values with present sales values
-    m_both = out["covers"].isna() & out["sales"].isna() # missing sales & covers
+    m_sales = (out["covers"].notna()) & (out["sales"].isna()) # missing sales values with present covers values
+    m_cov = (out["covers"].isna()) & (out["sales"].notna()) # missing cover values with present sales values
+    m_both = (out["covers"].isna()) & (out["sales"].isna()) # missing sales & covers
 
     # impute sales (sales = covers * apc)
     if m_sales.any():
@@ -78,17 +81,29 @@ def handle_duplicates(df):
     out = df.drop_duplicates(subset=["date"]).copy() # uses subset to treat rows with the same dates as duplicates
     return out
 
-def handle_outliers(df):
+# handles outliers carefully using threshold-style rules (z-score)
+def handle_outliers(df, z=5.0):
     out = df.copy()
-    
-    return
+    keep = out["holiday"] != ""
+    for col in ["sales", "covers"]:
+        mu, sd = out[col].mean(), out[col].std(ddof=0)
+        within = (out[col] - mu).abs() <= z * sd # reveals values with deviations from the mean outside the threshold
+        out = out[within | keep].copy() # ignores rows during holiday periods
+    return out.reset_index(drop=True)
 
+# centralises cleaning & pre-processing, imported into clean_data.py script
 def clean_data(df):
-    return(df
-           .pipe(normalise_headers)
-           .pipe(standardise_strings)
-           .pipe(parse_dates)
-           .pipe(coerce_numeric)
-           .pipe(handle_missing)
-           .pipe(handle_duplicates)
-           .pipe(handle_outliers))
+    df = (df
+            .pipe(normalise_headers)
+            .pipe(standardise_strings)
+            .pipe(parse_dates)
+            .pipe(coerce_numeric))
+    
+    df, report = handle_missing(df)
+
+    df = (df
+            .pipe(handle_duplicates)
+            .pipe(handle_outliers))
+    
+    return df, report
+          
