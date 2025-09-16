@@ -1,3 +1,4 @@
+import pandas as pd
 from src.io import load_csv, save_csv
 from src.cleaning import clean_data
 
@@ -7,6 +8,7 @@ def main():
     clean_df, report = clean_data(df)
     print(clean_df)
     print(report)
+    
 
 if __name__ == "__main__":
     main()

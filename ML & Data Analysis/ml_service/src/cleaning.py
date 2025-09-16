@@ -1,4 +1,5 @@
 import pandas as pd, hashlib, datetime as dt, numpy as np
+import re
 '''
 Data pre-processing & cleaning
 '''
@@ -14,7 +15,11 @@ def standardise_strings(df):
     out = df.copy()
     for col in ["internal_events", "external_events", "holiday"]:
         if col in out:
-            out[col] = out[col].fillna("").astype(str).str.strip() # fills null values with space and removes leading/trailing spaces
+            out[col] = (out[col].fillna("").astype(str) # fills null values with space and removes leading/trailing spaces
+                        .str.strip()
+                        .str.lower()
+                        .str.replace(r"[^a-z0-9]+", "_", regex=True) # allows for safe onehot column suffixes during encoding
+                        .str.strip("_")) 
     return out
 
 # parsing dates to datetime objects
@@ -27,12 +32,12 @@ def parse_dates(df):
 def coerce_numeric(df):
     out = df.copy()
     for col in ["sales", "covers"]:
-        series = out[col]
-        series = series.where(~series.apply(lambda x: isinstance(x, type)), np.nan) # replaces stray Python type objects with NaN
-        series = series.astype(str).str.strip()
-        series = series.str.replace("£,", "", regex=True) # removes currency symbols
-        series = series.replace({"": np.nan, "None": np.nan, "N/A": np.nan, "-": np.nan}) # treats comman placeholders as NaN
-        out[col] = pd.to_numeric(series, errors="coerce") # converts back to numeric, erronous values are nulled
+        s = out[col]
+        s = s.where(~s.apply(lambda x: isinstance(x, type)), np.nan) # replaces stray Python type objects with NaN
+        s = s.astype(str).str.strip()
+        s = s.str.replace("£,", "", regex=True) # removes currency symbols
+        s = s.replace({"": np.nan, "None": np.nan, "N/A": np.nan, "-": np.nan}) # treats comman placeholders as NaN
+        out[col] = pd.to_numeric(s, errors="coerce") # converts back to numeric, erronous values are nulled
     return out
 
 # handles missing values according to column
@@ -42,7 +47,7 @@ def handle_missing(df):
 
     out["dow"] = out["date"].dt.weekday # adds day-of-week feature for day-specific apc
 
-    valid = (out["sales"].notna()) & (out["covers"].notna()) & (out["covers"].gt(0))
+    valid = (out["sales"].notna()) & (out["covers"].notna()) & (out["covers"].gt(0)) & (out["covers"].gt(0))
     apc_global = (out.loc[valid, "sales"] / out.loc[valid, "covers"]).median() # median avg £ per cover for fallback use
     apc_dow = ( # median avg £ per cover for each day of the week
         (out.loc[valid, "sales"] / out.loc[valid, "covers"])
@@ -62,7 +67,7 @@ def handle_missing(df):
     # impute covers (covers = sales / apc)
     if m_cov.any():
         apc = (out.loc[m_cov, "dow"].map(apc_dow)).fillna(apc_global) # maps imputable covers rows through day-specific apc using apc_global as fallback
-        out.loc[m_sales, "covers"] = (out.loc[m_sales, "sales"] / apc).round().clip(lower=0)  
+        out.loc[m_cov, "covers"] = (out.loc[m_cov, "sales"] / apc).round().clip(lower=0)  
 
     out = out.loc[~m_both].reset_index(drop=True) # drops rows with no present sales or covers
 
