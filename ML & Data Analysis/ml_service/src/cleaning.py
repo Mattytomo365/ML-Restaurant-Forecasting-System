@@ -17,7 +17,7 @@ def standardise_strings(df):
         if col in out.columns:
             out[col] = out[col].fillna("").astype(str).str.strip().str.lower() # fills null values with space and removes leading/trailing spaces
             s = out[col]
-            if col == "holiday":
+            if col == "holiday" or col == "external_events":
                 s = (s.str.replace(r"[|,/]", ";", regex=True) # normalize delimiters to ';' 
                         .str.replace(r"\s*;\s*", ";", regex=True) # trim around ;
                         .str.replace(r";{2,}", ";", regex=True) # collapse ;;
@@ -29,14 +29,14 @@ def standardise_strings(df):
 # parsing dates to datetime objects
 def parse_dates(df):
     out = df.copy()
-    out["date"] = pd.to_datetime(out["date"], format="%d/%m/%Y", errors="raise") # coverts and raises any exceptions encountered, fails fast
+    out["date"] = pd.to_datetime(out["date"], format="%d/%m/%Y", errors="raise") # converts and raises any exceptions encountered, fails fast
     return out
 
 # ensures necessary columns are numerical in type and erronous data is surfaced
 def coerce_numeric(df):
     out = df.copy()
     for col in ["sales", "covers"]:
-        s = out[col]
+        s = out[col] # series of values within column
         s = s.where(~s.apply(lambda x: isinstance(x, type)), np.nan) # replaces stray Python type objects with NaN
         s = s.astype(str).str.strip()
         s = s.str.replace("£,", "", regex=True) # removes currency symbols
@@ -49,7 +49,7 @@ def handle_missing(df):
     out = df.copy()
     out["weather"] = (out["weather"].astype("string").str.strip().str.lower().fillna("cloudy")) # fill null weather with 'cloudy' and normalises non-null values
 
-    out["day_of_week"] = out["date"].dt.weekday # adds day-of-week feature for day-specific apc
+    out["day_of_week"] = out["date"].dt.day_name() # adds day-of-week feature for day-specific apc
 
     valid = (out["sales"].notna()) & (out["covers"].notna()) & (out["covers"].gt(0)) & (out["covers"].gt(0))
     apc_global = (out.loc[valid, "sales"] / out.loc[valid, "covers"]).median() # median avg £ per cover for fallback use
