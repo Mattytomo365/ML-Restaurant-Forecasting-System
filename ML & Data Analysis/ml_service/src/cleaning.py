@@ -29,7 +29,7 @@ def standardise_strings(df):
 # parsing dates to datetime objects
 def parse_dates(df):
     out = df.copy()
-    out["date"] = pd.to_datetime(out["date"], format="%d/%m/%Y", errors="raise") # converts and raises any exceptions encountered, fails fast
+    out["date"] = pd.to_datetime(out["date"].astype(str), format="%d/%m/%Y", errors="raise") # converts and raises any exceptions encountered, fails fast
     return out
 
 # ensures necessary columns are numerical in type and erronous data is surfaced

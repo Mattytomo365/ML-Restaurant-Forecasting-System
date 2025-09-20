@@ -18,7 +18,7 @@ def main():
 
     df_onehot = apply_onehot_schema(df_clean, schema, drop_original=False)
     print(df_onehot)
-    df_onehot.to_csv("df_onehot")
+    df_onehot.to_csv("data/df_onehot.csv")
     
 
 if __name__ == "__main__":

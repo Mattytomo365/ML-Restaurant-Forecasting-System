@@ -39,9 +39,8 @@ env/
 Thumbs.db
 
 
-# Model artifacts & registry (file-based)
+# Model artifacts
 models/*.joblib
-models/*.manifest.json
 models/ACTIVE.txt
 
 
