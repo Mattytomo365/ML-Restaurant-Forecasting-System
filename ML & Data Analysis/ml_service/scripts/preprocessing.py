@@ -2,6 +2,7 @@ import pandas as pd
 from src.io import load_csv, save_csv
 from src.cleaning import clean_data
 from src.encoding import fit_onehot_schema, save_onehot_schema, load_onehot_schema, apply_onehot_schema
+from src.features import add_all_features
 
 def main():
 
@@ -18,7 +19,11 @@ def main():
 
     df_onehot = apply_onehot_schema(df_clean, schema, drop_original=False)
     print(df_onehot)
-    df_onehot.to_csv("data/df_onehot.csv")
+
+    # feature engineering
+    df_feature = add_all_features(df_onehot)
+    print(df_feature)
+    df_feature.to_csv("data/df_feature.csv", index=False, mode="w")
     
 
 if __name__ == "__main__":

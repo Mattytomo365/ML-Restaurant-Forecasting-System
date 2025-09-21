@@ -83,7 +83,7 @@ def handle_missing(df):
         "apc_global": float(apc_global),
     }     
 
-    return out, summary
+    return out.drop(columns=["day_of_week"]), summary
 
 # drop all duplicate dates
 def handle_duplicates(df):
