@@ -4,7 +4,7 @@ Engineering additional features to produce more meaningful data
 '''
 
 # adds cyclical features for day of week and day of year to capture and help models understand periodic data
-def add_cyclical_features(df):
+def add_cyclical(df):
     out = df.copy()
     d = out["date"]
 
@@ -21,7 +21,34 @@ def add_cyclical_features(df):
 
     return out
 
+# adds lags to capture short-term momentum and weekday repitition
+def add_lags(df):
+    lags = (1, 7, 14, 28) # maintain the same day of week
+    out = df.copy()
+
+    for col in ("sales", "covers"):
+        for lag in lags:
+            out[f"{col}_lag_{lag}"] = out[col].shift(lag) # shifts past values from the same day into new columns
+    return out
+
+# adds rolling statistics to summarise information over a specific period of time, giving a broader perspective
+def add_rolls(df):
+    windows = (7, 14, 28) # justify
+    out = df.copy()
+
+    for col in ("sales", "covers"):
+        past = out[col].shift(1) # keeps past only
+        for window in windows:
+            # calculate mean and standard deviation over corresponding window
+            out[f"{col}_rollmean{window}"] = past.rolling(window).mean()
+            out[f"{col}_rollstd{window}"] = past.rolling(window).std()
+    return out
+    
+
 # bringing all feature engineering methods together
 def add_all_features(df):
-    df = add_cyclical_features(df)
+    df = (df
+        .pipe(add_cyclical)
+        .pipe(add_lags)
+        .pipe(add_rolls))
     return df

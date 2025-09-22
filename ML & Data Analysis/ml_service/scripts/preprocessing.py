@@ -1,5 +1,5 @@
 import pandas as pd
-from dataset import load_csv, save_csv
+from src.dataset import load_csv, save_csv
 from src.cleaning import clean_data
 from src.encoding import fit_onehot_schema, save_onehot_schema, load_onehot_schema, apply_onehot_schema
 from src.features import add_all_features
