@@ -33,7 +33,7 @@ def add_lags(df):
 
 # adds rolling statistics to summarise information over a specific period of time, giving a broader perspective
 def add_rolls(df):
-    windows = (7, 14, 28) # justify
+    windows = (7, 14, 28) # weekly windows to get weekly patterns
     out = df.copy()
 
     for col in ("sales", "covers"):
