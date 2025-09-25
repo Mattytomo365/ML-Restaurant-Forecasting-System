@@ -24,7 +24,7 @@ def main():
     # feature engineering
     df_feature = add_all_features(df_onehot)
     print(df_feature)
-    df_feature.to_csv("data/df_feature.csv", index=False, mode="w")
+    df_feature.to_csv("data/df_feature.csv", index=False, mode="w",date_format="%Y-%m-%d")
     
 
 if __name__ == "__main__": # used for running script outside of vscode, add argparsing to complete configuration

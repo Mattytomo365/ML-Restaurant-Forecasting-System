@@ -2,7 +2,7 @@ import numpy as np, pandas as pd
 '''
 Engineering additional features to produce more meaningful data
 '''
-
+# generates seasonal Fourier features
 # adds cyclical features for day of week and day of year to capture and help models understand periodic data
 def add_cyclical(df):
     out = df.copy()
@@ -18,6 +18,8 @@ def add_cyclical(df):
     denom = np.where(d.dt.is_leap_year, 366.0, 365.0) # adds leap-year precision
     out["doy_sin"] = np.sin((2 * np.pi * (doy - 1.0)) / denom).astype("float32") # (doy - 1) so Jan 1st is angle 0
     out["doy_cos"] = np.cos((2 * np.pi * (doy - 1.0)) / denom).astype("float32")
+    out["doy_sin_2"] = np.sin(2 * (2 * np.pi * (doy - 1.0)) / denom).astype("float32") # ONLY KEEP IF BACKTESTS IMPROVE MAE/RMSE/MAPE etc...
+    out["doy_cos_2"] = np.cos(2 * (2 * np.pi * (doy - 1.0)) / denom).astype("float32")
 
     return out
 
