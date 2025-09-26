@@ -1,1 +1,0 @@
-# Marks src/ as a package so it can be easily imported into other areas

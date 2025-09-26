@@ -1,13 +1,12 @@
 import os, numpy as np, pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from dataset import load_csv
+from dataset.dataset import load_csv
 '''
 Data visualisations supporting points raised in report
 '''
 # helper function to improve visibility of values on x-axis
 def monthly_labels(ax):
-    import matplotlib.dates as mdates
     ax.xaxis.set_major_locator(mdates.MonthLocator())
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
     ax.figure.autofmt_xdate()
