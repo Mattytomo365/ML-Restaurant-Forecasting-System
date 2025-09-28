@@ -11,7 +11,9 @@ month_labels = {i: pd.Timestamp(2024, i, 1).strftime("%b") for i in range(1,13)}
 def monthly_avg(df, metric):
     d = df["date"]
     month_m = (df.groupby(d.dt.month)[metric].agg(value="mean", n_days="count") # aggregating groups to compute mean and n_days 
-               .reindex(1, 13).fillna({"value": 0, "n_days": 0})) # maintains clean fixed order with no missing months
+               .reindex(index=range(1, 13)).fillna({"value": 0, "n_days": 0}) # maintains clean fixed order with no missing months
+               .rename_axis("month") # makes index name 'month' not numbers from 1 to 12
+               .reset_index()) # brings the renamed index into a new column
 
     # additional columns for user interface refinement
     month_m["label"] = month_m["month"].map(month_labels) # labelling to remove numerics

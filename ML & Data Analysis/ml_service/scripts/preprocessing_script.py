@@ -1,8 +1,8 @@
 import pandas as pd
-from dataset.dataset import load_csv, save_csv
-from preprocessing.cleaning import clean_data
-from preprocessing.encoding import fit_onehot_schema, save_onehot_schema, load_onehot_schema, apply_onehot_schema
-from preprocessing.features import add_all_features
+from src.dataset.load_save import load_csv, save_csv # absolute imports
+from src.preprocessing.cleaning import clean_data
+from src.preprocessing.encoding import fit_onehot_schema, save_onehot_schema, load_onehot_schema, apply_onehot_schema
+from src.preprocessing.features import add_all_features
 
 def main():
 
