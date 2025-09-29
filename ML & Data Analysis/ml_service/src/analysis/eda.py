@@ -10,13 +10,14 @@ month_labels = {i: pd.Timestamp(2024, i, 1).strftime("%b") for i in range(1,13)}
 # mean metric per calendar month
 def monthly_avg(df, metric):
     d = df["date"]
-    month_m = (df.groupby(d.dt.month)[metric].agg(value="mean", n_days="count") # aggregating groups to compute mean and n_days 
+    month = d.dt.month # returns 1-12
+    month_m = (df.groupby(month)[metric].agg(value="mean", n_days="count") # aggregating groups to compute mean and n_days 
                .reindex(index=range(1, 13)).fillna({"value": 0, "n_days": 0}) # maintains clean fixed order with no missing months
-               .rename_axis("month") # makes index name 'month' not numbers from 1 to 12
+               .rename_axis("month") # renames index to 'month'
                .reset_index()) # brings the renamed index into a new column
 
     # additional columns for user interface refinement
-    month_m["label"] = month_m["month"].map(month_labels) # labelling to remove numerics
+    month_m["label"] = month_m["month"].map(month_labels) # converting numerical month names to strings
     month_m["value"] = month_m["value"].astype(float).round(2) # rounding
     month_m["n_days"] = month_m["n_days"].astype(int)
     return month_m[["month", "label", "value", "n_days"]]
@@ -29,17 +30,18 @@ def weekday_avg(df, month, metric):
     if not m.any():  # fallback
         return pd.DataFrame({"dow": dow_order, "value": [0]*7}) # => [0, 0, 0, 0, 0, 0, 0]
     
-    dow = d.dt.day_name().str[:3]
-    day_m = (df.loc[m].groupby(dow)[metric].mean() # calculates weekday-based average for metric
-             .reindex(dow_order).fillna(0.0) # maintains fixed order with no missing days
-             .reset_index().rename(columns={"index": "dow", metric: "value"})) # consistent column names
+    dow = d.dt.day_name().str[:3] # returns "Mon", "Tue" etc
+    day_m = (df.loc[m].groupby(dow)[metric].agg(value="mean") # calculates weekday-based average for metric and names column 'value'
+            .reindex(dow_order).fillna(0.0) # maintains fixed order with no missing days
+            .rename_axis("dow") # renames index to 'dow'
+            .reset_index()) 
     
     day_m["value"] = day_m["value"].astype(float).round(2) # rounding for user interface
     return day_m[["dow", "value"]]
 
 
 # compute uplift of specified factors against specified metric
-def uplift(df, factor, metric, month, sep=";"):
+def uplift(df, factor, month, metric, sep=";"):
     d = df["date"]
     m = d.dt.month.eq(int(month))
 
@@ -50,7 +52,6 @@ def uplift(df, factor, metric, month, sep=";"):
 
     tags_list = sub[factor].apply(lambda val: [tag.strip() for tag in val.split(sep) if tag.strip() and tag.strip() != "none"])
     base_mask = tags_list.str.len().eq(0) # baseline = days without events
-    dow = d.dt.day_name().str[:3]
     baseline = (sub.loc[base_mask])[metric].mean() # mean metric of days without events
     baseline_weather = float(df[metric].mean()) # baseline for entire metric
 

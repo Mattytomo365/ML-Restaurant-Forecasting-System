@@ -1,7 +1,7 @@
 import os, numpy as np, pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from ..dataset.load_save import load_csv # relative import
+from src.dataset.load_save import load_csv # avoiding fragile relative imports
 '''
 Data visualisations supporting points raised in report
 '''
@@ -99,5 +99,5 @@ def plot_all(df):
 
 
 if __name__ == "__main__":
-    df = load_csv("../data/df_feature.csv")
+    df = load_csv("data/df_feature.csv")
     plot_all(df)
