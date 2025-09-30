@@ -23,7 +23,9 @@ def main():
 
     # feature engineering
     df_feature = add_all_features(df_onehot)
-    print(df_feature)
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.max_rows', None)
+    print(df_feature.head())
     df_feature.to_csv("data/df_feature.csv", index=False, mode="w",date_format="%Y-%m-%d")
     
 

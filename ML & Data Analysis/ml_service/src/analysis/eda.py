@@ -49,8 +49,9 @@ def uplift(df, factor, month, metric, sep=";"):
         return pd.DataFrame(columns=["tag","n","avg","baseline","uplift"])
     
     sub = df.loc[m].copy()
+    s = sub[factor].fillna("").astype(str).str.strip().str.lower() # forces robust strings
 
-    tags_list = sub[factor].apply(lambda val: [tag.strip() for tag in val.split(sep) if tag.strip() and tag.strip() != "none"])
+    tags_list = s.apply(lambda val: [tag.strip() for tag in val.split(sep) if tag.strip() and tag.strip() != "none"])
     base_mask = tags_list.str.len().eq(0) # baseline = days without events
     baseline = (sub.loc[base_mask])[metric].mean() # mean metric of days without events
     baseline_weather = float(df[metric].mean()) # baseline for entire metric
