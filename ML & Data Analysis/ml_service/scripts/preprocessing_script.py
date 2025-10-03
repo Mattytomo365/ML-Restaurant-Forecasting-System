@@ -7,7 +7,7 @@ from src.preprocessing.features import add_all_features
 def main():
 
     # data cleaning
-    df = load_csv('./data/training.csv')
+    df = load_csv('./data/restaurant_data.csv')
     print(df)
     df_clean, report = clean_data(df)
     print(df_clean)
@@ -23,10 +23,10 @@ def main():
 
     # feature engineering
     df_feature = add_all_features(df_onehot)
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.max_rows', None)
-    print(df_feature.head())
-    df_feature.to_csv("data/df_feature.csv", index=False, mode="w",date_format="%Y-%m-%d")
+    # pd.set_option('display.max_columns', None)
+    # pd.set_option('display.max_rows', None)
+    print(df_feature)
+    df_feature.to_csv("data/restaurant_data_processed", index=False, mode="w",date_format="%Y-%m-%d")
     
 
 if __name__ == "__main__": # used for running script outside of vscode, add argparsing to complete configuration

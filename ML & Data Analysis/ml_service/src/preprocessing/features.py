@@ -30,7 +30,7 @@ def add_lags(df):
 
     for col in ("sales", "covers"):
         for lag in lags:
-            out[f"{col}_lag_{lag}"] = out[col].shift(lag) # shifts past values from the same day into new columns
+            out[f"{col}_lag_{lag}"] = out[col].shift(lag).fillna("") # shifts past values from the same day into new columns
     return out
 
 # adds rolling statistics to summarise information over a specific period of time, giving a broader perspective
@@ -42,8 +42,8 @@ def add_rolls(df):
         past = out[col].shift(1) # keeps past only
         for window in windows:
             # calculate mean and standard deviation over corresponding window
-            out[f"{col}_rollmean{window}"] = past.rolling(window).mean()
-            out[f"{col}_rollstd{window}"] = past.rolling(window).std()
+            out[f"{col}_rollmean{window}"] = past.rolling(window).mean().fillna("")
+            out[f"{col}_rollstd{window}"] = past.rolling(window).std().fillna("")
     return out
     
 
