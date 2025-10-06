@@ -29,7 +29,9 @@ This repository will be updated accordingly. You can view the current progress o
 This project follows Clean Architecture, enabling the clear separation of responsibilities and concerns between distince layers: 
 
 ### Diagram - Onion View & Component View
-![image](diagrams/architecture-onion.png) ![image](diagrams/architecture-component.png)
+<img src="diagrams/architecture-onion.png" alt="drawing" width="200"/>
+<img src="diagrams/architecture-component.png" alt="drawing" width="500"/>
+
 
 - Presentation/API Layer – Manages HTTP requests through controllers, mapping to DTOs and delegating business logic to necessary application services.
 - Application Layer – Orchestrates the execution of tasks and use cases, handling interactions between the domain layer and external systems in the infrastructure layer.
