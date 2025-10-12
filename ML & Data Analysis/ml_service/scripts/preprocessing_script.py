@@ -23,10 +23,8 @@ def main():
 
     # feature engineering
     df_feature = add_all_features(df_onehot)
-    # pd.set_option('display.max_columns', None)
-    # pd.set_option('display.max_rows', None)
     print(df_feature)
-    df_feature.to_csv("data/restaurant_data_processed", index=False, mode="w",date_format="%Y-%m-%d")
+    df_feature.to_csv("data/restaurant_data_processed.csv", index=False, mode="w",date_format="%Y-%m-%d")
     
 
 if __name__ == "__main__": # used for running script outside of vscode, add argparsing to complete configuration
