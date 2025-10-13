@@ -45,11 +45,10 @@ def rolling_splits(dates, n_folds=3, valid_days=28):
           yield train_mask, test_mask # returns each fold until loop ends
 
 # determine optimal hyper-parameter combinations using folds returned from rolling_splits
-def grid_search(df, target, kind, param_grid, valid_days=28, n_folds=3):
-     dates = df["date"]
-     features = feature_cols(df)
-     X = df[features].to_numpy # feature matrix
-     y = df[target].to_numpy # target vector
+def grid_search(train, features, target, kind, param_grid):
+     dates = train["date"]
+     X = train[features].to_numpy # feature matrix
+     y = train[target].to_numpy # target vector
      best_score, best_params = np.inf, None # keeps track of lowest average validation error and its parameters
 
      for params in ParameterGrid(param_grid): # iterates over each hyper-parameter combination manually
