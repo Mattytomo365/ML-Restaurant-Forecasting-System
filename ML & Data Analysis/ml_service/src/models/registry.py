@@ -1,8 +1,16 @@
-import json
+from pathlib import Path
+import json, tempfile
 '''
-Handles model manifests
+Model manifest orchestration - saving, reading, validation
 '''
+# custom exceptions for domain-specific signals
+class RegistryError(Exception): pass # base exception for registry module
+class ModelNotFound(RegistryError): pass # inherits from RegistryError
+class ManifestError(RegistryError): pass
 
+registry_dir = Path("models")
+
+# validation for model manifest components
 def validate(manifest):
     if manifest.kind not in {"ridge","rf","xgb"}:
         raise ValueError(f"Unsupported kind: {manifest.kind}")
@@ -15,7 +23,8 @@ def validate(manifest):
         if k not in manifest.metrics:
             raise KeyError(f"metrics missing '{k}'")
 
-def save_manifest(model_id, target, features, best_params, metrics, t, out): # Writes model manifest JSON (Human-readable model metadata for frontend use)
+# Writes model manifest JSON (Human-readable model metadata for frontend use)
+def save_manifest(model_id, target, features, best_params, metrics, t, out): 
     manifest = {
         "model_id": model_id,
         "kind": metrics["kind"],
@@ -29,15 +38,17 @@ def save_manifest(model_id, target, features, best_params, metrics, t, out): # W
     (out / "manifest.json").write_text(json.dumps(manifest))
     return str(out)
 
-def read_manifest(model_id: str):
+# Reads manifest JSON file - used for displaying model information to user
+def read_manifest(model_id):
+    path = registry_dir / model_id / "manifest.json" # joining path segments
 
-    return
+    if not path.exists():
+        raise ModelNotFound(f"Manifest not found for model_id={model_id}")
+    try:
+        data = json.loads(path.read_text())
+    except json.JSONDecodeError as e: # if deserialised data is invalid
+        raise ManifestError(f"Invalid JSON in {path}: {e}") from e
+    return data
 
 def list_models():
-    return
-
-def set_active(): # Write ACTIVE.txt
-    return
-
-def get_active(): # Read ACTIVE.txt
     return
