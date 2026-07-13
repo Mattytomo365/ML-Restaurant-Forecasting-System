@@ -1,52 +1,122 @@
-import os, numpy as np, pandas as pd, datetime as dt
+import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+from figures.save_figure import save_figure
 '''
 User-facing eda on historical data to uncover trends and patterns
 '''
 
-dow_order = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
-month_labels = {i: pd.Timestamp(2024, i, 1).strftime("%b") for i in range(1,13)} # month labels based off dates within dataset
+DOW_ORDER = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"] # set order
+month_labels = {i: pd.Timestamp(2024, i, 1).strftime("%b") for i in range(1, 13)}
 
-# mean metric per calendar month
-def monthly_avg(df, metric):
+
+def _prepare_dates(df: pd.DataFrame) -> pd.DataFrame:
+    '''
+    Ensure downstream analysis always receives datetimelike values.
+    '''
+    out = df.copy()
+    out["date"] = pd.to_datetime(out["date"], dayfirst=True, errors="coerce")
+    return out.loc[out["date"].notna()].copy()
+
+
+def monthly_avg(df: pd.DataFrame, 
+                metric: str) -> pd.DataFrame:
+    '''
+    Mean metric per calendar month
+    '''
+    df = _prepare_dates(df)
     d = df["date"]
-    month = d.dt.month # returns 1-12
-    month_m = (df.groupby(month)[metric].agg(value="mean", n_days="count") # aggregating groups to compute mean and n_days 
-               .reindex(index=range(1, 13)).fillna({"value": 0, "n_days": 0}) # maintains clean fixed order with no missing months
-               .rename_axis("month") # renames index to 'month'
-               .reset_index()) # brings the renamed index into a new column
+    month = d.dt.to_period("M") # year-month keys for year-month grouping
+    month_m = (df.groupby(month)[metric].agg(value="mean", n_days="count")
+               .rename_axis("month")
+               .reset_index())
 
-    # additional columns for user interface refinement
-    month_m["label"] = month_m["month"].map(month_labels) # converting numerical month names to strings
-    month_m["value"] = month_m["value"].astype(float).round(2) # rounding
+    # additional labelling
+    month_ts = month_m["month"].dt.to_timestamp()
+    month_m["period"] = month_m["month"].astype(str)
+    month_m["label"] = month_m["month"].dt.strftime("%b %Y")
+    month_m["month"] = month_m["month"].dt.month.astype(int)
+    month_m["value"] = month_m["value"].astype(float).round(2)
     month_m["n_days"] = month_m["n_days"].astype(int)
-    return month_m[["month", "label", "value", "n_days"]]
 
-# mean metric by weekday for a specified month
-def weekday_avg(df, month, metric):
+    fig, ax = plt.subplots()
+    a = month_m["value"]
+
+    ax.bar(month_ts, a, width=20, alpha=0.35, label="daily avg")
+    ax.plot(month_ts, a, marker="o", linewidth=1.5, label="trend")
+
+    ax.set_xlabel("month")
+    ax.set_ylabel(f"average {metric}")
+    ax.set_title(f"Average daily {metric} per month")
+    ax.grid(True, which="major", linestyle=":", linewidth=0.8, alpha=0.7)
+    monthly_labels(ax)
+    save_figure(fig, f"monthly_average_{metric}", "eda_figures")
+
+    return pd.DataFrame(month_m[["month", "period", "label", "value", "n_days"]])
+
+
+def weekday_avg(df: pd.DataFrame, 
+                month: str, 
+                metric: str) -> pd.DataFrame:
+    '''
+    Mean metric by weekday for a specified month
+    '''
+    df = _prepare_dates(df)
     d = df["date"]
     m = d.dt.month.eq(int(month)) # locates month within dataset
 
-    if not m.any():  # fallback
-        return pd.DataFrame({"dow": dow_order, "value": [0]*7}) # => [0, 0, 0, 0, 0, 0, 0]
+    if not m.any(): # fallback
+        return pd.DataFrame({"dow": DOW_ORDER, "value": [0]*7})
     
-    dow = d.dt.day_name().str[:3] # returns "Mon", "Tue" etc
-    day_m = (df.loc[m].groupby(dow)[metric].agg(value="mean") # calculates weekday-based average for metric and names column 'value'
-            .reindex(dow_order).fillna(0.0) # maintains fixed order with no missing days
-            .rename_axis("dow") # renames index to 'dow'
+    dow = d.dt.day_name().str[:3] # day name abbreviation
+    day_m = (df.loc[m].groupby(dow)[metric].agg(value="mean") # weekday-based average
+            .reindex(DOW_ORDER).fillna(0.0) # maintain fixed order
+            .rename_axis("dow")
             .reset_index()) 
     
-    day_m["value"] = day_m["value"].astype(float).round(2) # rounding for user interface
-    return day_m[["dow", "value"]]
+    day_m["value"] = day_m["value"].astype(float).round(2)
+    return pd.DataFrame(day_m[["dow", "value"]])
 
+
+def weekday_avg_plot(weekday_averages: list[pd.DataFrame]) -> None:
+    '''
+    Visualisation of weekday averages across all months
+    '''
+
+    df = pd.concat(weekday_averages, ignore_index=True)
+
+    fig, ax = plt.subplots()
+
+    by_dow = df.groupby("dow")["value"].mean().reindex(DOW_ORDER)
+    ax.bar(by_dow.index, by_dow.values, alpha=0.35, label="weekday avg")
+    ax.plot(by_dow.index, by_dow.values, marker="o", linewidth=1.5, label="trend")
+    ax.set_xlabel("weekday")
+    ax.set_ylabel("average sales")
+    ax.set_title("Average weekday sales across all months")
+    ax.grid(True, which="major", linestyle=":", linewidth=0.8, alpha=0.7)
+    save_figure(fig, "weekday_average_total", "eda_figures")
+
+
+def monthly_labels(ax) -> None:
+    '''
+    Helper function to improve visibility of values on x-axis
+    '''
+    ax.xaxis.set_major_locator(mdates.MonthLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
+    ax.figure.autofmt_xdate()
 
 # compute uplift of specified factors against specified metric
-def uplift(df, factor, month, metric, sep=";"):
+def uplift(df: pd.DataFrame,
+            factor: str, 
+            month: str, 
+            metric: str, 
+            sep=";") -> pd.DataFrame:
+    df = _prepare_dates(df)
     d = df["date"]
     m = d.dt.month.eq(int(month))
 
     if not m.any(): # fallback
-        return pd.DataFrame(columns=["tag","n","avg","baseline","uplift"])
+        return pd.DataFrame(columns=["tag", "n_days", "avg", "uplift_tag"])
     
     sub = df.loc[m].copy()
     s = sub[factor].fillna("").astype(str).str.strip().str.lower() # forces robust strings
@@ -67,21 +137,21 @@ def uplift(df, factor, month, metric, sep=";"):
         sub["baseline"] = baseline_weather
 
         # filter out rows with an invalid baseline
-        sub = sub.loc[sub["baseline"].notna()]
+        sub = sub.loc[sub["baseline"].notna() & sub["baseline"].ne(0)]
 
         # fallback
         if sub.empty:
-            return pd.DataFrame(columns=["tag","n","avg","baseline","uplift"])
+            return pd.DataFrame(columns=["tag", "n_days", "avg", "uplift_tag"])
 
     else:
         sub["baseline"] = baseline
 
         # filter out rows with no event or an invalid baseline
-        sub = sub.loc[~base_mask & sub["baseline"].notna()]
+        sub = sub.loc[~base_mask & sub["baseline"].notna() & sub["baseline"].ne(0)]
 
         # fallback
         if sub.empty:
-            return pd.DataFrame(columns=["tag","n","avg","baseline","uplift"])
+            return pd.DataFrame(columns=["tag", "n_days", "avg", "uplift_tag"])
         
     # calculate percentage uplift per row against baseline
     sub["uplift_row"] = 100.0 * (sub[metric] - sub["baseline"]) / sub["baseline"]

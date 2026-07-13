@@ -1,11 +1,16 @@
-import pandas as pd, hashlib, datetime as dt
+import pandas as pd
 
 '''
 Loading raw data & saving to csv
 '''
 
-def load_csv(path: str):
-    return pd.read_csv(path, parse_dates=["date"])
+def load_csv(path: str) -> pd.DataFrame:
+    df = pd.read_csv(path)
 
-def save_csv(df, path:str):
-    df = save_csv(path, index=False)
+    if "date" in df.columns:
+        df["date"] = pd.to_datetime(df["date"], dayfirst=True, errors="coerce")
+
+    return df
+
+def save_csv(df: pd.DataFrame, path: str) -> None:
+    df.to_csv(path, index=False)
